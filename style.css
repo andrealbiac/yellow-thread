@@ -652,6 +652,11 @@ figure:hover figcaption {
     overflow-y: auto;
   }
 
+  .site-shell {
+    width: 100%;
+    padding-bottom: 50px;
+  }
+
   footer {
     flex-direction: column-reverse;
     align-items: stretch;
