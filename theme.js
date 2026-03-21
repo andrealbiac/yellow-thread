@@ -1,6 +1,5 @@
 /**
- * Color theme picker: swatch click sets body theme and trail accent.
- * Color button click toggles swatches open/closed; click again or pick a swatch to close.
+ * Color theme picker: swatch applies theme and leaves the menu open; close via button or outside click.
  */
 (function () {
   const themeAccents = {
@@ -37,13 +36,16 @@
       e.preventDefault();
       e.stopPropagation();
       setTheme(btn.getAttribute('data-theme'));
-      if (picker) picker.classList.remove('open');
     });
   });
 
-  document.addEventListener('click', function (e) {
-    if (picker && !picker.contains(e.target)) {
+  /* Capture: run before target so outside-click close never races the button toggle */
+  document.addEventListener(
+    'click',
+    function (e) {
+      if (!picker || picker.contains(e.target)) return;
       picker.classList.remove('open');
-    }
-  });
+    },
+    true
+  );
 })();

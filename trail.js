@@ -1,6 +1,6 @@
 /**
- * Mouse trail effect with spring physics
- * Creates an SVG path that follows the cursor with smooth, spring-like motion
+ * Pointer trail effect with spring physics
+ * Follows the mouse on desktop and the finger on touch devices
  */
 
 (function () {
@@ -87,13 +87,17 @@
     requestAnimationFrame(animate);
   }
 
-  document.addEventListener("mousemove", (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+  function setPointerPosition(clientX, clientY) {
+    mouseX = clientX;
+    mouseY = clientY;
     if (!isMouseOver) {
       isMouseOver = true;
       initPoints();
     }
+  }
+
+  document.addEventListener("mousemove", (e) => {
+    setPointerPosition(e.clientX, e.clientY);
   });
 
   document.addEventListener("mouseenter", () => {
@@ -103,6 +107,35 @@
   document.addEventListener("mouseleave", () => {
     isMouseOver = false;
   });
+
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length === 0) return;
+      const t = e.touches[0];
+      setPointerPosition(t.clientX, t.clientY);
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      if (e.touches.length === 0) return;
+      const t = e.touches[0];
+      setPointerPosition(t.clientX, t.clientY);
+    },
+    { passive: true }
+  );
+
+  function onTouchEnd(e) {
+    if (e.touches.length === 0) {
+      isMouseOver = false;
+    }
+  }
+
+  document.addEventListener("touchend", onTouchEnd, { passive: true });
+  document.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
   window.addEventListener("resize", resize);
 
