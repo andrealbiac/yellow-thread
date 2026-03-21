@@ -10,16 +10,30 @@
     blue: '#4A44FF'
   };
 
+  var STORAGE_KEY = 'yellow-thread-theme';
+
   function setTheme(themeKey) {
     document.body.classList.remove('theme-gray', 'theme-yellow', 'theme-blue');
     if (themeKey && themeKey !== 'pink' && themeKey !== 'default') {
       document.body.classList.add('theme-' + themeKey);
+      try { localStorage.setItem(STORAGE_KEY, themeKey); } catch (e) {}
+    } else {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     }
     var accent = themeAccents[themeKey] || themeAccents.default;
     document.querySelectorAll('.mouse-trail path').forEach(function (path) {
       path.setAttribute('stroke', accent);
     });
   }
+
+  (function restoreTheme() {
+    try {
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'reload') return;
+      var t = localStorage.getItem(STORAGE_KEY);
+      if (t && t !== 'pink' && t !== 'default') setTheme(t);
+    } catch (e) {}
+  })();
 
   var picker = document.querySelector('.color-picker');
   var colorBtn = document.querySelector('.color-btn');
