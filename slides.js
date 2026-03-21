@@ -56,8 +56,17 @@ const nextSlide = () => {
   applyPattern();
 };
 
+const MOBILE_BREAKPOINT = 768;
+const isMobile = () => window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+
 const applyPattern = () => {
-  section.style.gridTemplateColumns = pattern[index].map((p) => `${p}fr`).join(' ');
+  if (isMobile()) {
+    section.style.gridTemplateColumns = '1fr';
+    section.style.gridTemplateRows = pattern[index].map((p) => `${p}fr`).join(' ');
+  } else {
+    section.style.gridTemplateColumns = pattern[index].map((p) => `${p}fr`).join(' ');
+    section.style.gridTemplateRows = '';
+  }
   slides.forEach((slide, slideIndex) => {
     if (pattern[index][slideIndex] === 0) {
       slide.classList.add('hide');
@@ -68,6 +77,8 @@ const applyPattern = () => {
 };
 
 section.addEventListener('click', nextSlide);
+
+window.addEventListener('resize', applyPattern);
 
 // Also advance slides with the space bar
 window.addEventListener('keydown', (event) => {
