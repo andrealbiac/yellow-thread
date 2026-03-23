@@ -78,6 +78,35 @@ const applyPattern = () => {
 
 section.addEventListener('click', nextSlide);
 
+const SWIPE_THRESHOLD = 50;
+let touchStartY = 0;
+
+section.addEventListener(
+  'touchstart',
+  function (e) {
+    touchStartY = e.touches[0].clientY;
+  },
+  { passive: true }
+);
+
+section.addEventListener(
+  'touchmove',
+  function (e) {
+    if (isMobile()) e.preventDefault();
+  },
+  { passive: false }
+);
+
+section.addEventListener(
+  'touchend',
+  function (e) {
+    if (!isMobile()) return;
+    var delta = touchStartY - e.changedTouches[0].clientY;
+    if (delta > SWIPE_THRESHOLD) nextSlide();
+  },
+  { passive: true }
+);
+
 window.addEventListener('resize', applyPattern);
 
 // Also advance slides with the space bar

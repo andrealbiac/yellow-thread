@@ -649,12 +649,20 @@ figure:hover figcaption {
 @media (max-width: 768px) {
   body {
     overflow-x: hidden;
+  }
+
+  body:not(.page-about) {
+    overflow-y: hidden;
+    touch-action: none;
+  }
+
+  body.page-about {
     overflow-y: auto;
   }
 
   .site-shell {
     width: 100%;
-    padding-bottom: 50px;
+    padding-bottom: 70px;
   }
 
   footer {
@@ -675,6 +683,7 @@ figure:hover figcaption {
     align-items: flex-end;
     gap: 0.5rem;
     z-index: 100;
+    touch-action: manipulation;
   }
 
   footer .about-btn {
