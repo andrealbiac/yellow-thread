@@ -60,6 +60,7 @@ body {
   background: var(--site-bg, #F64444);
   color: var(--site-accent, #FF99DD);
   padding: 0;
+  padding-top: 8px;
   font-family: Athletics, Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   transition: background 0.35s ease, color 0.35s ease;
 }

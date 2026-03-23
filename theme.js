@@ -10,6 +10,14 @@
     blue: '#4A44FF'
   };
 
+  const themeLogos = {
+    pink: 'img/logo.svg',
+    default: 'img/logo.svg',
+    gray: 'img/Logo-theme-gray.svg',
+    yellow: 'img/Logo-theme-yellow.svg',
+    blue: 'img/Logo-theme-blue.svg'
+  };
+
   var STORAGE_KEY = 'yellow-thread-theme';
 
   function setTheme(themeKey) {
@@ -24,6 +32,8 @@
     document.querySelectorAll('.mouse-trail path').forEach(function (path) {
       path.setAttribute('stroke', accent);
     });
+    var logo = document.querySelector('.site-logo');
+    if (logo) logo.src = themeLogos[themeKey] || themeLogos.default;
   }
 
   (function restoreTheme() {
