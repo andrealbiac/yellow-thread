@@ -544,7 +544,7 @@ body.theme-blue .color-swatches .swatch[data-theme="blue"] {
 
 section.gallery {
   display: grid;
-  grid-template-columns: repeat(25, 1fr);
+  grid-template-columns: repeat(var(--gallery-slide-count, 60), 1fr);
   gap: 0;
   flex: 1;
   min-height: 0;
