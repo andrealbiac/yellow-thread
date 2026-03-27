@@ -462,6 +462,12 @@ body.theme-blue .color-swatches .swatch[data-theme="blue"] {
   min-width: 0;
 }
 
+.about-page__col--photo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .about-page__photo {
   margin: 0;
 }
@@ -730,10 +736,6 @@ figure:hover figcaption {
 
   .about-page__grid {
     grid-template-columns: 1fr;
-  }
-
-  .about-page__col--photo {
-    display: none;
   }
 
   .page-about .about-page__aside {
