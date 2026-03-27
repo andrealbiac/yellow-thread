@@ -119,6 +119,50 @@ const prevSlide = () => {
   applyPattern();
 };
 
+const AUTOPLAY_INTERVAL_MS = 3000;
+const AUTOPLAY_RESUME_AFTER_MS = 3000;
+
+let autoplayTimerId = null;
+let resumeTimerId = null;
+
+const prefersReducedMotion = () =>
+  window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+
+function clearAutoplayTimer() {
+  if (autoplayTimerId !== null) {
+    clearTimeout(autoplayTimerId);
+    autoplayTimerId = null;
+  }
+}
+
+function clearResumeTimer() {
+  if (resumeTimerId !== null) {
+    clearTimeout(resumeTimerId);
+    resumeTimerId = null;
+  }
+}
+
+function scheduleAutoplayStep() {
+  if (prefersReducedMotion()) return;
+  clearAutoplayTimer();
+  autoplayTimerId = setTimeout(() => {
+    autoplayTimerId = null;
+    nextSlide();
+    scheduleAutoplayStep();
+  }, AUTOPLAY_INTERVAL_MS);
+}
+
+/** Pause timed advance and restart it after a quiet period (any gallery interaction). */
+function onGalleryInteraction() {
+  if (prefersReducedMotion()) return;
+  clearAutoplayTimer();
+  clearResumeTimer();
+  resumeTimerId = setTimeout(() => {
+    resumeTimerId = null;
+    scheduleAutoplayStep();
+  }, AUTOPLAY_RESUME_AFTER_MS);
+}
+
 const MOBILE_BREAKPOINT = 768;
 const isMobile = () => window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
 
@@ -139,7 +183,10 @@ const applyPattern = () => {
   });
 };
 
-section.addEventListener('click', nextSlide);
+section.addEventListener('click', () => {
+  onGalleryInteraction();
+  nextSlide();
+});
 
 let wheelAccum = 0;
 /** Scroll delta before one step; lower than the anti-gap tuning, softer to use. */
@@ -155,6 +202,7 @@ section.addEventListener(
     e.preventDefault();
     const dy = e.deltaY;
     if (dy === 0) return;
+    onGalleryInteraction();
     wheelAccum += dy;
     const now = performance.now();
     if (now - lastWheelStepAt < WHEEL_MIN_INTERVAL_MS) return;
@@ -183,6 +231,7 @@ let touchStartY = 0;
 section.addEventListener(
   'touchstart',
   function (e) {
+    onGalleryInteraction();
     touchStartY = e.touches[0].clientY;
   },
   { passive: true }
@@ -221,7 +270,17 @@ window.addEventListener('resize', applyPattern);
 window.addEventListener('keydown', (event) => {
   if (event.code === 'Space' || event.key === ' ') {
     event.preventDefault();
+    onGalleryInteraction();
     nextSlide();
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    clearAutoplayTimer();
+    clearResumeTimer();
+  } else if (!prefersReducedMotion()) {
+    scheduleAutoplayStep();
   }
 });
 
@@ -245,3 +304,4 @@ function warmGalleryImages() {
 warmGalleryImages();
 
 applyPattern();
+scheduleAutoplayStep();
