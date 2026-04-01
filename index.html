@@ -21,12 +21,22 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
 </head>
 
-<body>
-  <script>try{var n=performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload')localStorage.removeItem('yellow-thread-theme');else{var t=localStorage.getItem('yellow-thread-theme');if(t&&t!=='pink'&&t!=='default')document.body.classList.add('theme-'+t);}}catch(e){}</script>
+<body class="page-home">
+  <script>try{var n=performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload')localStorage.removeItem('yellow-thread-theme');}catch(e){}</script>
   <div class="site-shell">
     <aside class="sidebar">
       <a href="index.html" class="sidebar-brand">
-      <img src="img/logo.svg" alt="Yellow Thread" class="site-logo" width="69" height="119" aria-hidden="true">
+      <span class="site-logo site-logo--mark" aria-hidden="true">
+        <svg width="70" height="119" viewBox="0 0 70 119" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+          <path d="M67.7914 1.25024L43.7407 48.8037M43.7407 48.8037L44.2868 117.704M43.7407 48.8037L20.5877 1.25024M63.6232 1.25024L41.7451 44.7048M16.8354 1.25024L39.9151 50.2696V117.704M12.7053 1.25024L36.0895 50.2696V117.704M8.76226 1.25024L32.264 50.2696V117.704M5.19328 1.25024L28.4384 50.2696V117.704M1.25024 1.25024L24.6128 50.2696V117.704M51.8647 1.25024L36.1932 33.3019M59.6735 1.25024L39.7165 40.5385M55.7691 1.25024L38.0437 37.1027M47.9603 1.25024L34.1719 29.1504" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="49.6061" x2="66.5414" y2="49.6061" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="53.4701" x2="66.5414" y2="53.4701" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="57.3341" x2="66.5414" y2="57.3341" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="61.1981" x2="66.5414" y2="61.1981" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="65.0621" x2="66.5414" y2="65.0621" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="2.50024" y1="68.9261" x2="66.5414" y2="68.9261" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </span>
       <div class="title-wrap">
         <h1 class="logo vertical-title">Yellow Thread</h1>
       </div>
@@ -96,15 +106,12 @@
     <footer>
       <p class="tagline">The craft studio dedicated to helping mission-driven brands succeed.</p>
       <div class="footer-actions">
-        <div class="color-picker">
-          <button type="button" class="color-btn" aria-label="Choose color theme">Colour</button>
-          <div class="color-swatches">
-            <button type="button" class="swatch swatch-pink" aria-label="Original pink theme" data-theme="pink"></button>
-            <button type="button" class="swatch swatch-gray" aria-label="Soft gray theme" data-theme="gray"></button>
-            <button type="button" class="swatch swatch-yellow" aria-label="Yellow theme" data-theme="yellow"></button>
-            <button type="button" class="swatch swatch-blue" aria-label="Blue theme" data-theme="blue"></button>
-          </div>
-        </div>
+        <nav class="gallery-categories" aria-label="Gallery categories">
+          <button type="button" class="gallery-category is-active" data-category="0">Workshop</button>
+          <button type="button" class="gallery-category" data-category="1">Retail &amp; spaces</button>
+          <button type="button" class="gallery-category" data-category="2">Events</button>
+          <button type="button" class="gallery-category" data-category="3">Studios</button>
+        </nav>
         <a class="about-btn" href="about.html">About</a>
       </div>
     </footer>
@@ -112,7 +119,8 @@
   </div>
 
   <script src="trail.js"></script>
-  <script src="theme.js"></script>
+  <script src="theme-core.js"></script>
+  <script src="gallery-categories.js"></script>
   <script src="slides.js"></script>
 </body>
 </html>

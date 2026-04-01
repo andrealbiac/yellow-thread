@@ -65,6 +65,28 @@ body {
   transition: background 0.35s ease, color 0.35s ease;
 }
 
+body.page-home {
+  transition: background 1.25s ease-in-out, color 1.25s ease-in-out;
+}
+
+body.page-home .site-logo,
+body.page-home .sidebar .vertical-title,
+body.page-home .sidebar .logo.vertical-title {
+  transition: color 1.25s ease-in-out, opacity 1.25s ease-in-out;
+}
+
+body.page-home .gallery-category {
+  transition: opacity 0.55s ease, color 1.25s ease-in-out;
+}
+
+body.page-home .gallery-categories {
+  padding-top: 0.75rem;
+}
+
+body.page-home .mouse-trail path {
+  transition: stroke 1.25s ease-in-out;
+}
+
 body.theme-gray {
   --site-bg: #B5A99E;
   --site-accent: #F64444;
@@ -133,13 +155,22 @@ body.theme-blue {
 }
 
 .site-logo {
-  width: 52px;
-  height: auto;
   flex-shrink: 0;
   margin-top: 0;
   padding-right: 0.25rem;
   color: var(--site-accent, #FF99DD);
-  transition: color 0.35s ease;
+  transition: color 0.35s ease, opacity 0.35s ease;
+}
+
+.site-logo img,
+.site-logo--mark svg {
+  width: 52px;
+  height: auto;
+  display: block;
+}
+
+.site-logo--mark {
+  line-height: 0;
 }
 
 .sidebar .vertical-title {
@@ -154,6 +185,7 @@ body.theme-blue {
   color: var(--site-accent, #FF99DD);
   text-transform: uppercase;
   font-size: clamp(0.75rem, 100cqh / 12, 3.5rem);
+  transition: color 0.35s ease;
 }
 
 .logo {
@@ -252,13 +284,15 @@ footer {
 
 footer .tagline {
   margin: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .footer-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.8rem;
+  gap: 1.2rem;
   flex-shrink: 0;
 }
 
@@ -306,16 +340,16 @@ footer .tagline {
   background: transparent;
   color: var(--site-accent, #FF99DD);
   font-family: Athletics, Inter, system-ui, sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.15;
+  line-height: 1.2;
   box-sizing: border-box;
   transition: color 0.35s ease, background 0.35s ease;
   transform: translateY(-0.25rem);
@@ -324,6 +358,61 @@ footer .tagline {
 .about-btn:hover {
   background: var(--site-accent, #FF99DD);
   color: var(--site-bg, #F64444);
+}
+
+.gallery-categories {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.42rem;
+  text-align: right;
+}
+
+.gallery-category {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: Athletics, Inter, system-ui, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--site-accent, #FF99DD);
+  cursor: none;
+  opacity: 0.32;
+  transition: opacity 0.55s ease, color 0.35s ease;
+  line-height: 1.2;
+}
+
+@media (min-width: 769px) {
+  .gallery-categories {
+    padding-right: 0.75rem;
+  }
+
+  .gallery-category {
+    font-size: 0.78rem;
+    letter-spacing: 0.07em;
+  }
+
+  .about-btn {
+    font-size: 0.78rem;
+    letter-spacing: 0.07em;
+  }
+}
+
+.gallery-category:hover {
+  opacity: 0.55;
+}
+
+.gallery-category.is-active {
+  opacity: 1;
+}
+
+.gallery-category:focus-visible {
+  outline: 2px solid var(--site-accent, #FF99DD);
+  outline-offset: 3px;
+  opacity: 1;
 }
 
 .color-swatches {
@@ -574,6 +663,15 @@ section.gallery div.hide {
   opacity: 0;
 }
 
+section.gallery .gallery-gap {
+  min-width: 0;
+  pointer-events: none;
+}
+
+section.gallery .gallery-gap figure {
+  display: none;
+}
+
 figure {
   width: 100%;
   padding: 0 0.5rem 0 0;
@@ -688,7 +786,7 @@ figure:hover figcaption {
     right: 1rem;
     flex-direction: column-reverse;
     align-items: flex-end;
-    gap: 0.5rem;
+    gap: 1rem;
     z-index: 100;
     touch-action: manipulation;
   }
@@ -706,6 +804,10 @@ figure:hover figcaption {
 
   footer .color-swatches {
     transform: translate(-50%, -50%) translate(-0.4rem, 2.6rem) rotate(-90deg);
+  }
+
+  .gallery-categories {
+    align-items: flex-end;
   }
 
   /* Gallery: fr controls row height; images size by row (height), not full width */

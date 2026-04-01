@@ -1,15 +1,51 @@
 const section = document.querySelector('section.gallery');
+const galleryCfg = window.yellowThreadGalleryCategories;
+
+/**
+ * @type {(number|null)[]} null = gap separator
+ */
+let slideCategory = [];
+
+function reorderGallerySection(sectionEl, groupIndices) {
+  const initial = Array.from(sectionEl.children);
+  const n = initial.length;
+  const frag = document.createDocumentFragment();
+  const categories = [];
+  const used = new Set();
+
+  for (let g = 0; g < groupIndices.length; g++) {
+    for (const origIdx of groupIndices[g]) {
+      if (origIdx < 0 || origIdx >= n) continue;
+      const div = initial[origIdx];
+      if (!div || used.has(div)) continue;
+      used.add(div);
+      frag.appendChild(div);
+      categories.push(g);
+    }
+    if (g < groupIndices.length - 1) {
+      const gap = document.createElement('div');
+      gap.className = 'gallery-gap';
+      gap.setAttribute('aria-hidden', 'true');
+      frag.appendChild(gap);
+      categories.push(null);
+    }
+  }
+
+  sectionEl.appendChild(frag);
+  return categories;
+}
+
+if (galleryCfg) {
+  slideCategory = reorderGallerySection(section, galleryCfg.GROUP_INDICES);
+}
+
 const slides = section.querySelectorAll('div');
 
-/** Keeps default CSS `grid-template-columns` in sync so you only add/remove slides in HTML. */
 section.style.setProperty('--gallery-slide-count', String(slides.length));
 
 let index = 0;
+let activeCategoryIndex = 0;
 
-/**
- * One row of fr weights per “step” (same rhythm as the original 25-slide design).
- * Each entry is the visible slice only; zeros fill the rest of the row per slide index.
- */
 const PATTERN_WEIGHTS = [
   [4, 3, 4],
   [3, 3, 4, 3],
@@ -64,15 +100,9 @@ function makeRow(slideCount, start, weights) {
   return row;
 }
 
-/** N = 25 → maxStart = 21; first segment matches the hand-tuned matrix exactly. */
 const ORIGINAL_MAX_START = 21;
-/** After the bridge at s = 21, repeat the W[2]…W[41] pair rhythm (period 20) so each pair stays 3-then-4 wide — avoids W[1]→W[2] at a large start, which shrinks the right edge and looks like a jump backward. */
 const EXTENDED_PAIR_PERIOD = 20;
 
-/**
- * Same stepping logic as the original 25-slide matrix for slideCount ≤ 25.
- * For wider galleries, continue with a phase reset so visible columns never creep backward on the right.
- */
 function buildPattern(slideCount) {
   const maxStart = slideCount - 4;
   if (maxStart < 0) {
@@ -106,6 +136,104 @@ function buildPattern(slideCount) {
 }
 
 const pattern = buildPattern(slides.length);
+
+const numCategories = galleryCfg ? galleryCfg.CATEGORIES.length : 0;
+
+/** First slide index (after reorder) per category. */
+const groupFirstSlideIndex = (() => {
+  if (!galleryCfg) return [];
+  const out = [];
+  for (let g = 0; g < galleryCfg.CATEGORIES.length; g++) {
+    const idx = slideCategory.findIndex((c) => c === g);
+    out.push(idx >= 0 ? idx : 0);
+  }
+  return out;
+})();
+
+function leftmostVisibleColumn(row) {
+  for (let j = 0; j < row.length; j++) {
+    if (row[j] > 0) return j;
+  }
+  return -1;
+}
+
+/**
+ * Jump target: left edge of the strip is this group’s first image, and every visible
+ * column is either that group or a gap (never another group’s image).
+ */
+function findJumpPatternIndex(groupIdx) {
+  const first = groupFirstSlideIndex[groupIdx] ?? 0;
+
+  const isCleanGroupView = (row) => {
+    if (leftmostVisibleColumn(row) !== first) return false;
+    for (let j = 0; j < row.length; j++) {
+      if (row[j] <= 0) continue;
+      const cat = slideCategory[j];
+      if (cat != null && cat !== groupIdx) return false;
+    }
+    return true;
+  };
+
+  for (let i = 0; i < pattern.length; i++) {
+    if (isCleanGroupView(pattern[i])) return i;
+  }
+
+  for (let i = 0; i < pattern.length; i++) {
+    if (leftmostVisibleColumn(pattern[i]) === first) return i;
+  }
+
+  for (let i = 0; i < pattern.length; i++) {
+    if (pattern[i][first] > 0) return i;
+  }
+  return 0;
+}
+
+const categoryButtons = document.querySelectorAll('.gallery-category');
+
+function resolveActiveCategory(row) {
+  const n = numCategories || 4;
+  const counts = Array(n).fill(0);
+  for (let i = 0; i < row.length; i++) {
+    if (row[i] === 0) continue;
+    const c = slideCategory[i];
+    if (c != null && c >= 0 && c < n) counts[c]++;
+  }
+
+  let best = -1;
+  let bestScore = -1;
+  for (let c = 0; c < n; c++) {
+    if (counts[c] >= 2) {
+      if (counts[c] > bestScore || (counts[c] === bestScore && (best < 0 || c < best))) {
+        bestScore = counts[c];
+        best = c;
+      }
+    }
+  }
+  if (best >= 0) return best;
+
+  bestScore = -1;
+  best = -1;
+  for (let c = 0; c < n; c++) {
+    if (counts[c] > bestScore || (counts[c] === bestScore && (best < 0 || c < best))) {
+      bestScore = counts[c];
+      best = c;
+    }
+  }
+  if (best >= 0) return best;
+  return activeCategoryIndex;
+}
+
+function updateCategoryNav(categoryIndex) {
+  activeCategoryIndex = categoryIndex;
+  categoryButtons.forEach((btn) => {
+    const i = Number(btn.getAttribute('data-category'));
+    btn.classList.toggle('is-active', i === categoryIndex);
+  });
+
+  if (!galleryCfg || !window.yellowThreadSetTheme) return;
+  const theme = galleryCfg.CATEGORIES[categoryIndex]?.theme || 'pink';
+  window.yellowThreadSetTheme(theme);
+}
 
 const nextSlide = () => {
   index += 1;
@@ -152,7 +280,6 @@ function scheduleAutoplayStep() {
   }, AUTOPLAY_INTERVAL_MS);
 }
 
-/** Pause timed advance and restart it after a quiet period (any gallery interaction). */
 function onGalleryInteraction() {
   if (prefersReducedMotion()) return;
   clearAutoplayTimer();
@@ -166,12 +293,24 @@ function onGalleryInteraction() {
 const MOBILE_BREAKPOINT = 768;
 const isMobile = () => window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
 
+/** Multiplier for gap columns’ `fr` share so separators read narrower than image columns. */
+const GAP_FR_SCALE = 0.32;
+
+function gridTrackFr(weight, slideIndex) {
+  if (weight === 0) return '0fr';
+  const isGap =
+    slideCategory.length === slides.length && slideCategory[slideIndex] === null;
+  const w = isGap ? weight * GAP_FR_SCALE : weight;
+  return `${w}fr`;
+}
+
 const applyPattern = () => {
+  const row = pattern[index];
   if (isMobile()) {
     section.style.gridTemplateColumns = '1fr';
-    section.style.gridTemplateRows = pattern[index].map((p) => `${p}fr`).join(' ');
+    section.style.gridTemplateRows = row.map((p, i) => gridTrackFr(p, i)).join(' ');
   } else {
-    section.style.gridTemplateColumns = pattern[index].map((p) => `${p}fr`).join(' ');
+    section.style.gridTemplateColumns = row.map((p, i) => gridTrackFr(p, i)).join(' ');
     section.style.gridTemplateRows = '';
   }
   slides.forEach((slide, slideIndex) => {
@@ -181,6 +320,10 @@ const applyPattern = () => {
       slide.classList.remove('hide');
     }
   });
+
+  if (slideCategory.length === slides.length) {
+    updateCategoryNav(resolveActiveCategory(pattern[index]));
+  }
 };
 
 section.addEventListener('click', () => {
@@ -188,10 +331,20 @@ section.addEventListener('click', () => {
   nextSlide();
 });
 
+categoryButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onGalleryInteraction();
+    const g = Number(btn.getAttribute('data-category'));
+    if (Number.isNaN(g)) return;
+    index = findJumpPatternIndex(g);
+    applyPattern();
+  });
+});
+
 let wheelAccum = 0;
-/** Scroll delta before one step; lower than the anti-gap tuning, softer to use. */
 const WHEEL_THRESHOLD = 80;
-/** Short pause between wheel-driven steps so fades can read softly without machine-gun advances. */
 const WHEEL_MIN_INTERVAL_MS = 180;
 
 let lastWheelStepAt = 0;
@@ -199,6 +352,7 @@ let lastWheelStepAt = 0;
 section.addEventListener(
   'wheel',
   (e) => {
+    if (!isMobile()) return;
     e.preventDefault();
     const dy = e.deltaY;
     if (dy === 0) return;
@@ -220,19 +374,18 @@ section.addEventListener(
   { passive: false }
 );
 
-/** Mobile: smaller = easier to start a swipe advance. */
-const SWIPE_THRESHOLD = 28;
-/** Extra pixels beyond threshold → one more slide (longer swipe passes several steps). */
-const SWIPE_DISTANCE_PER_STEP = 52;
-const SWIPE_MAX_STEPS = 8;
+const TOUCH_DRAG_PX_PER_STEP = 44;
+const TOUCH_MAX_STEPS_PER_MOVE = 8;
 
-let touchStartY = 0;
+let touchLastY = 0;
+let touchDragAccum = 0;
 
 section.addEventListener(
   'touchstart',
   function (e) {
     onGalleryInteraction();
-    touchStartY = e.touches[0].clientY;
+    touchLastY = e.touches[0].clientY;
+    touchDragAccum = 0;
   },
   { passive: true }
 );
@@ -240,30 +393,36 @@ section.addEventListener(
 section.addEventListener(
   'touchmove',
   function (e) {
-    if (isMobile()) e.preventDefault();
+    if (!isMobile()) return;
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    const dy = touchLastY - y;
+    touchLastY = y;
+    touchDragAccum += dy;
+
+    let used = 0;
+    while (touchDragAccum >= TOUCH_DRAG_PX_PER_STEP && used < TOUCH_MAX_STEPS_PER_MOVE) {
+      nextSlide();
+      touchDragAccum -= TOUCH_DRAG_PX_PER_STEP;
+      used++;
+    }
+    while (touchDragAccum <= -TOUCH_DRAG_PX_PER_STEP && used < TOUCH_MAX_STEPS_PER_MOVE) {
+      prevSlide();
+      touchDragAccum += TOUCH_DRAG_PX_PER_STEP;
+      used++;
+    }
   },
   { passive: false }
 );
 
-section.addEventListener(
-  'touchend',
-  function (e) {
-    if (!isMobile()) return;
-    const delta = touchStartY - e.changedTouches[0].clientY;
-    const abs = Math.abs(delta);
-    if (abs <= SWIPE_THRESHOLD) return;
+section.addEventListener('touchend', function () {
+  if (!isMobile()) return;
+  touchDragAccum = 0;
+});
 
-    const along = abs - SWIPE_THRESHOLD;
-    const steps = Math.min(SWIPE_MAX_STEPS, 1 + Math.floor(along / SWIPE_DISTANCE_PER_STEP));
-
-    if (delta > 0) {
-      for (let i = 0; i < steps; i++) nextSlide();
-    } else {
-      for (let i = 0; i < steps; i++) prevSlide();
-    }
-  },
-  { passive: true }
-);
+section.addEventListener('touchcancel', function () {
+  touchDragAccum = 0;
+});
 
 window.addEventListener('resize', applyPattern);
 
@@ -284,7 +443,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/** Decode all gallery bitmaps during idle time so first paint after a scroll step is not waiting on the GPU. */
 function warmGalleryImages() {
   const imgs = section.querySelectorAll('img');
   const run = () => {
