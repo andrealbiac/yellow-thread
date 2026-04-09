@@ -1,14 +1,14 @@
 /**
  * Gallery categories: titles, theme keys (pink | gray | yellow | blue), and which original
  * slide index (0-based order in index.html before reorder) belongs to each group.
- * index.html lists slides in folder order: Media & retail events, Mock ups, Production for VM, Shoots.
+ * index.html lists slides in folder order: media-retail-events, mock-ups, production-for-vm, shoots.
  */
 (function () {
   /** Display order matches theme assignment: one existing site theme per category. */
   const CATEGORIES = [
     { id: 'media-retail-events', title: 'Media & retail events', theme: 'pink' },
     { id: 'mock-ups', title: 'Mock ups', theme: 'gray' },
-    { id: 'production-vm', title: 'Production for VM', theme: 'yellow' },
+    { id: 'production-for-vm', title: 'Production for VM', theme: 'yellow' },
     { id: 'shoots', title: 'Shoots', theme: 'blue' },
   ];
 
